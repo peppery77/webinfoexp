@@ -112,5 +112,6 @@ def execute_boolean_query(query,inverted_index_skips):
 
 query = "(动作 and 剧情) or (科幻 and not 恐怖)"
 result = execute_boolean_query(query,inverted_index_skips)
-print(result)
-
+print(data['Book'].iloc[0])
+result_new = [data['Book'].iloc[i] for i in result]
+print(result_new)
