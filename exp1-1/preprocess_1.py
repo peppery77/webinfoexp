@@ -5,6 +5,8 @@ from collections import defaultdict
 import math
 import json
 import re
+from boolExecute import *
+from indexStorage import *
 
 # ... model loading code ...
 model = KeyedVectors.load_word2vec_format('D:\\2024秋\\web\\webinfoexp\\exp1-1\\light_Tencent_AILab_ChineseEmbedding.bin',binary=True)
@@ -90,28 +92,16 @@ print(inverted_index_skips)
 with open('inverted_index_skips.json','w',encoding='utf-8') as f:
     json.dump(inverted_index_skips,f,ensure_ascii=False,indent=4)
 
-def parse_boolean_query(query,token_sets):
-    query = query.replace('AND','and').replace('OR','or').replace('NOT','not')
-    try:
-        return eval(query,{"__builtins__":None},{"and":set.intersection,"or":set.union,"not":set.difference})
-    except Exception as e:
-        print(f"Error parsing query: {e}")
-        raise 
-
-def execute_boolean_query(query,inverted_index_skips):
-    tokens = re.findall(r'\b\w+\b', query)
-    tokens = [token for token in tokens if token.lower() not in {'and', 'or', 'not'} and token in inverted_index_skips.keys()]
-    token_sets = {token:set(doc_id for doc_id,_ in inverted_index_skips.get(token,[])) for token in tokens}
-    for token in tokens:
-        if token in token_sets:
-            query = query.replace(token, str(token_sets[token]))
-        else:
-            query = query.replace(token, "set()")  # 如果词不在索引中，使用空集合
-    print(query)
-    return parse_boolean_query(query,token_sets)
 
 query = "(动作 and 剧情) or (科幻 and not 恐怖)"
 result = execute_boolean_query(query,inverted_index_skips)
 print(data['Book'].iloc[0])
 result_new = [data['Book'].iloc[i] for i in result]
-print(result_new)
+print(type(result_new[0]))
+inverted_index_block = {word:block_storage(postings) for word,postings in inverted_index.items()}
+with open('inverted_index_block.json','w',encoding='utf-8') as f:
+    json.dump(inverted_index_block,f,ensure_ascii=False,indent=4)
+
+inverted_index_front = {word:front_coding(postings) for word,postings in inverted_index.items()}
+with open('inverted_index_front.json','w',encoding='utf-8') as f:
+    json.dump(inverted_index_front,f,ensure_ascii=False,indent=4)
